@@ -1,5 +1,4 @@
-// Lawnquistadors. No third-party calls, no storage, no cookies.
-// The only network request is the quote form posting back to this site (Netlify Forms).
+// Lawnquistadors spec site. No network calls, no storage, no cookies.
 (function () {
   'use strict';
 
@@ -55,19 +54,24 @@
   onChange(mq, syncStory);
   syncStory();
 
-  // ----- Quote form -> Netlify Forms -----
+  // ----- Quote form: front-end only -----
+  // SPEC DEMO: nothing is sent anywhere (CSP also blocks it). Values are
+  // validated, summarised in the confirmation, then cleared.
   var form = document.getElementById('quote-form');
   var done = document.getElementById('quote-done');
   var reset = document.getElementById('quote-reset');
-  var submitBtn = document.getElementById('quote-submit');
-  var sendErr = document.getElementById('quote-send-err');
-  var fields = ['q-name', 'q-phone', 'q-address', 'q-service'].map(function (id) {
+  var doneTitle = document.getElementById('done-title');
+  var doneMsg = document.getElementById('done-msg');
+  var email = document.getElementById('q-email');
+  var fields = ['q-name', 'q-phone', 'q-email', 'q-address', 'q-service'].map(function (id) {
     return document.getElementById(id);
   });
 
   function check(el) {
     var v = el.value.trim();
-    var ok = v.length > 0;
+    var ok;
+    if (el === email) ok = v === '' || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+    else ok = v.length > 0;
     if (ok && el.id === 'q-phone') ok = v.replace(/\D/g, '').length >= 10;
     el.setAttribute('aria-invalid', ok ? 'false' : 'true');
     var err = document.getElementById(el.id + '-err');
@@ -79,37 +83,27 @@
   fields.forEach(function (el) {
     el.addEventListener('blur', function () { if (el.value) check(el); });
     el.addEventListener('input', function () { if (el.getAttribute('aria-invalid') === 'true') check(el); });
+    el.addEventListener('change', function () { if (el.getAttribute('aria-invalid') === 'true') check(el); });
   });
-
-  function setSending(on) {
-    submitBtn.disabled = on;
-    submitBtn.textContent = on ? 'Sending…' : 'Request my free quote';
-  }
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    sendErr.hidden = true;
     var firstBad = null;
     fields.forEach(function (el) { if (!check(el) && !firstBad) firstBad = el; });
     if (firstBad) { firstBad.focus(); return; }
 
-    setSending(true);
-    fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(new FormData(form)).toString()
-    }).then(function (res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      form.reset();
-      fields.forEach(function (el) { el.removeAttribute('aria-invalid'); });
-      form.hidden = true;
-      done.hidden = false;
-      done.focus();
-    }).catch(function () {
-      sendErr.hidden = false;
-    }).then(function () {
-      setSending(false);
-    });
+    var first = document.getElementById('q-name').value.trim().split(/\s+/)[0];
+    var how = (form.querySelector('input[name="contact"]:checked') || {}).value === 'Text' ? 'text' : 'call';
+    var when = document.getElementById('q-time').value;
+    doneTitle.textContent = 'Thanks, ' + first + '!';
+    doneMsg.textContent = 'Levi will ' + how + ' you back with a free estimate' +
+      (when ? ' (you said ' + when.toLowerCase() + ' works best).' : '.');
+
+    form.reset();
+    fields.forEach(function (el) { el.removeAttribute('aria-invalid'); });
+    form.hidden = true;
+    done.hidden = false;
+    done.focus();
   });
 
   reset.addEventListener('click', function () {
