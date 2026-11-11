@@ -18,8 +18,10 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 ## Privacy / security posture
 
 - No third-party scripts, fonts, analytics, cookies or storage. System fonts only.
-- A CSP `<meta>` restricts everything to same-origin and sets `connect-src 'none'` and `form-action 'none'`.
-- **The quote form sends nothing.** Inputs have no `name` attributes, submit is intercepted in JS, and the values are cleared after the confirmation shows. A real handler (email service, Netlify Forms, etc.) has to be wired up before launch, and the CSP must be updated to allow it.
+- A CSP `<meta>` restricts everything to same-origin. `connect-src` and `form-action` are `'self'` only, so the quote form can post back to this site and nowhere else.
+- **The quote form uses Netlify Forms** (`name="quote"`, `data-netlify="true"`, honeypot `bot-field`). Fields: `name`, `phone`, `address`, `service`. `script.js` validates the form, then POSTs it to `/` with fetch and shows the thank-you state. If the POST fails, it shows an error with Levi's phone number. Without JS, the form posts normally and Netlify shows its default success page.
+  - In Netlify: **Forms → enable form detection**, redeploy, then add an **email notification** for the `quote` form so Levi gets each lead.
+  - Locally (`python -m http.server`) the POST fails on purpose, so you'll see the error message. That's expected.
 - Facebook is a plain outbound link (`rel="noopener noreferrer"`), not an embed.
 
 ## Images

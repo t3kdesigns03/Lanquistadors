@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Locked down: only same-origin files load, nothing can be fetched or submitted anywhere. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'">
+  <!-- Locked down: only same-origin files load. The quote form may only post back to this site (Netlify Forms). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'">
   <meta name="referrer" content="no-referrer">
   <title>Lawnquistadors | Lawn Care in Lincoln, NE</title>
   <meta name="description" content="Lawnquistadors: mowing, string trimming, and blade edging in Lincoln, NE. Clear communication, dependable service. All new customers get $10 off their first service. Call (402) 840-7341.">
@@ -15,12 +15,21 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
+  <!-- Compass rose (from Levi's yard sign), reused as a small brand mark -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-compass" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="20" fill="none" stroke="currentColor" stroke-width="2.5"/>
+      <path fill="currentColor" opacity=".55" d="M32 32 45 19l-9 17zM32 32 45 45l-17-9zM32 32 19 45l9-17zM32 32 19 19l17 9z"/>
+      <path fill="currentColor" d="m32 2 5 25 25 5-25 5-5 25-5-25-25-5 25-5z"/>
+    </symbol>
+  </svg>
+
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="#top" aria-label="Lawnquistadors home">
-        <img src="img/logo.png" alt="Lawnquistadors: Conquering Lincoln lawns since 2026" width="1000" height="595">
+        <img src="img/logo.png" alt="Lawnquistadors: Conquering Lincoln lawns since 2026" width="1000" height="595" fetchpriority="high">
       </a>
-      <nav class="header-nav" aria-label="Sections">
+      <nav class="header-nav" id="site-nav" aria-label="Sections">
         <a href="#services">Services</a>
         <a href="#story">Our story</a>
         <a href="#reviews">Reviews</a>
@@ -32,6 +41,10 @@
           <span>(402) 840-7341</span>
         </a>
         <a class="btn btn-rust btn-sm" href="#quote">Get a free quote</a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>
+          <span class="menu-bars" aria-hidden="true"></span>
+          <span class="sr-only">Menu</span>
+        </button>
       </div>
     </div>
   </header>
@@ -44,17 +57,21 @@
           <p class="eyebrow">Lawn care in Lincoln, NE</p>
           <h1>Need your lawn conquered?</h1>
           <p class="lede">At Lawnquistadors, we keep lawn care straightforward with three core philosophies: clear communication, dependable service, and a lawn that’s left looking neat and well cared for.</p>
-          <div class="offer" role="note" aria-label="New customer offer">
-            <span class="offer-amt">$10 off</span>
-            <span class="offer-text"><strong>your first service</strong><span>All new customers</span></span>
-          </div>
+          <a class="offer" href="#quote">
+            <span class="offer-amt" aria-hidden="true"><span class="offer-num">$10</span><span class="offer-off">off</span></span>
+            <span class="offer-text">
+              <span class="offer-tag">New customer offer</span>
+              <strong><span class="sr-only">$10 off </span>your first service</strong>
+              <span class="offer-cta">Claim it with a free&nbsp;quote&nbsp;<span aria-hidden="true">&rarr;</span></span>
+            </span>
+          </a>
           <div class="cta-row">
             <a class="btn btn-rust" href="#quote">Get a free quote</a>
             <a class="btn btn-ghost" href="tel:+14028407341">Call (402) 840-7341</a>
           </div>
         </div>
         <figure class="hero-photo">
-          <img src="img/lawn-stripes.jpg" alt="Freshly mowed lawn with even stripes along a wooden fence" width="818" height="818" fetchpriority="high">
+          <img src="img/lawn-stripes.jpg" alt="Freshly mowed lawn with even stripes along a wooden fence" width="818" height="818" fetchpriority="high" decoding="async">
         </figure>
       </div>
       <ul class="pillars wrap" aria-label="Our three core philosophies">
@@ -73,7 +90,7 @@
         </div>
         <div class="service-grid">
           <article class="service">
-            <img src="img/lawn-stripes.jpg" alt="Striped, freshly mowed lawn" width="818" height="818" loading="lazy">
+            <img src="img/lawn-stripes.jpg" alt="Striped, freshly mowed lawn" width="818" height="818" loading="lazy" decoding="async">
             <div class="service-body">
               <h3>Mowing</h3>
               <p class="price">Starting at <strong>$35</strong></p>
@@ -81,14 +98,14 @@
             </div>
           </article>
           <article class="service">
-            <img src="img/fence-trim.jpg" alt="Grass trimmed cleanly along the base of a wooden fence" width="1200" height="1200" loading="lazy">
+            <img src="img/fence-trim.jpg" alt="Grass trimmed cleanly along the base of a wooden fence" width="1200" height="1200" loading="lazy" decoding="async">
             <div class="service-body">
               <h3>String trimming</h3>
               <p class="price">Available upon request</p>
             </div>
           </article>
           <article class="service">
-            <img src="img/sidewalk-edge.jpg" alt="Sidewalk with crisp, blade-edged grass lines on both sides" width="1141" height="1141" loading="lazy">
+            <img src="img/sidewalk-edge.jpg" alt="Sidewalk with crisp, blade-edged grass lines on both sides" width="1141" height="1141" loading="lazy" decoding="async">
             <div class="service-body">
               <h3>Blade edging</h3>
               <p class="price">Available as a separate service</p>
@@ -107,7 +124,11 @@
     <section class="story" id="story" aria-labelledby="story-h">
       <div class="wrap story-grid">
         <figure class="story-photo">
-          <img src="img/levi.jpg" alt="Levi, owner of Lawnquistadors, holding a Lawnquistadors yard sign" width="827" height="1200" loading="lazy">
+          <div class="story-frame">
+            <img src="img/levi.jpg" alt="Levi, owner of Lawnquistadors, holding a Lawnquistadors yard sign" width="827" height="1200" loading="lazy" decoding="async">
+            <svg class="story-seal" aria-hidden="true" focusable="false"><use href="#i-compass"/></svg>
+          </div>
+          <figcaption>Levi <span aria-hidden="true">&middot;</span> Owner &amp; founder</figcaption>
         </figure>
         <div class="story-copy">
           <p class="eyebrow">Our story</p>
@@ -161,39 +182,44 @@
 
         <div class="quote-card">
           <!--
-            SPEC DEMO: this form is front-end only. Inputs intentionally have no
-            `name` attributes and the page CSP sets form-action 'none' and
-            connect-src 'none', so nothing typed here can leave the browser.
-            Wire up a real handler before this goes live.
+            Netlify Forms: Netlify detects this form at deploy time (data-netlify)
+            and stores submissions under Forms > "quote". script.js posts it with
+            fetch so the visitor stays on the page; without JS it posts normally.
+            Form detection + email notifications are switched on in the Netlify UI.
           -->
-          <form id="quote-form" novalidate>
+          <form id="quote-form" name="quote" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+            <input type="hidden" name="form-name" value="quote">
+            <p class="hp" aria-hidden="true">
+              <label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+            </p>
             <div class="field">
               <label for="q-name">Name</label>
-              <input id="q-name" type="text" autocomplete="name" required>
+              <input id="q-name" name="name" type="text" autocomplete="name" required>
               <p class="err" id="q-name-err" hidden>Please enter your name.</p>
             </div>
             <div class="field">
               <label for="q-phone">Phone</label>
-              <input id="q-phone" type="tel" autocomplete="tel" inputmode="tel" required>
+              <input id="q-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required>
               <p class="err" id="q-phone-err" hidden>Please enter a phone number Levi can call.</p>
             </div>
             <div class="field">
               <label for="q-address">Address</label>
-              <input id="q-address" type="text" autocomplete="street-address" required>
+              <input id="q-address" name="address" type="text" autocomplete="street-address" required>
               <p class="err" id="q-address-err" hidden>Please enter the service address.</p>
             </div>
             <div class="field">
               <label for="q-service">Service needed</label>
-              <select id="q-service" required>
+              <select id="q-service" name="service" required>
                 <option value="">Choose a service</option>
-                <option>Mowing</option>
-                <option>String trimming</option>
-                <option>Blade edging</option>
-                <option>Something not listed</option>
+                <option value="Mowing">Mowing</option>
+                <option value="String trimming">String trimming</option>
+                <option value="Blade edging">Blade edging</option>
+                <option value="Something not listed">Something not listed</option>
               </select>
               <p class="err" id="q-service-err" hidden>Please choose a service.</p>
             </div>
-            <button class="btn btn-rust btn-block" type="submit">Request my free quote</button>
+            <button class="btn btn-rust btn-block" type="submit" id="quote-submit">Request my free quote</button>
+            <p class="form-err" id="quote-send-err" role="alert" hidden>Sorry, that didn’t go through. Please try again, or call Levi at <a href="tel:+14028407341">(402) 840-7341</a>.</p>
           </form>
 
           <div class="quote-done" id="quote-done" hidden tabindex="-1">
