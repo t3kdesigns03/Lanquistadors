@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Locked down: only same-origin files load. The quote form may only post back to this site (Netlify Forms). -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'">
+  <!-- Locked down: only same-origin files load, nothing can be fetched or submitted anywhere (spec: the form is front-end only). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'">
   <meta name="referrer" content="no-referrer">
   <title>Lawnquistadors | Lawn Care in Lincoln, NE</title>
   <meta name="description" content="Lawnquistadors: mowing, string trimming, and blade edging in Lincoln, NE. Clear communication, dependable service. All new customers get $10 off their first service. Call (402) 840-7341.">
-  <meta name="theme-color" content="#f7efdc">
+  <meta name="theme-color" content="#f2c892">
   <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="preload" as="image" href="img/bg-map.jpg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -50,10 +51,20 @@
   </header>
 
   <main id="main">
+    <!-- Hero + Services share the original site's faded parchment map -->
+    <div class="map-zone">
     <!-- HERO -->
     <section class="hero" id="top">
       <div class="wrap hero-grid">
         <div class="hero-copy">
+          <div class="grass-row">
+            <p class="grass-hint" id="grass-hint" hidden><span class="hint-arrow" aria-hidden="true">&#8598;</span> Tap the logo &mdash; watch it grow!</p>
+            <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="false" hidden>
+              <svg aria-hidden="true" viewBox="0 0 24 24" class="snd-off"><path d="M4 9v6h4l5 4V5L8 9zm12.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z"/></svg>
+              <svg aria-hidden="true" viewBox="0 0 24 24" class="snd-on"><path d="M4 9v6h4l5 4V5L8 9zm11.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM13 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+              <span class="sr-only">Grass pop sound</span>
+            </button>
+          </div>
           <p class="eyebrow">Lawn care in Lincoln, NE</p>
           <h1>Need your lawn conquered?</h1>
           <p class="lede">At Lawnquistadors, we keep lawn care straightforward with three core philosophies: clear communication, dependable service, and a lawn that’s left looking neat and well cared for.</p>
@@ -79,6 +90,7 @@
         <li><span class="pillar-num">II</span>Dependable service</li>
         <li><span class="pillar-num">III</span>A lawn left neat and well cared for</li>
       </ul>
+      <div class="grass-fringe" aria-hidden="true"><span></span><span></span></div>
     </section>
 
     <!-- SERVICES -->
@@ -98,10 +110,16 @@
             </div>
           </article>
           <article class="service">
-            <img src="img/fence-trim.jpg" alt="Grass trimmed cleanly along the base of a wooden fence" width="1200" height="1200" loading="lazy" decoding="async">
+            <!-- PHOTO PLACEHOLDER: replace with Levi's own close-up of a freshly string-trimmed edge (see SPEC-NOTES). -->
+            <div class="img-placeholder" role="img" aria-label="Photo placeholder: string-trimming close-up still to come from Levi">
+              <svg aria-hidden="true" focusable="false"><use href="#i-compass"/></svg>
+              <span class="ph-tag">Photo placeholder</span>
+              <span class="ph-text">Levi’s trimming close-up goes here</span>
+            </div>
             <div class="service-body">
               <h3>String trimming</h3>
               <p class="price">Available upon request</p>
+              <p class="service-quote">“Professional trimming job and professional stripes throughout the yard!” <span>&mdash; Theresa Marie</span></p>
             </div>
           </article>
           <article class="service">
@@ -119,6 +137,7 @@
         </div>
       </div>
     </section>
+    </div><!-- /.map-zone -->
 
     <!-- STORY -->
     <section class="story" id="story" aria-labelledby="story-h">
@@ -176,34 +195,37 @@
         <div class="quote-intro">
           <p class="eyebrow">Free estimates</p>
           <h2 id="quote-h">Get a free quote</h2>
-          <p>Tell us a little about your lawn and Levi will call you back. New customers get <strong>$10 off their first service</strong>.</p>
+          <p>Tell us a little about your lawn and Levi will get back to you. New customers get <strong>$10 off their first service</strong>.</p>
           <p class="quote-call">Rather talk now? <a href="tel:+14028407341">Call (402) 840-7341</a></p>
         </div>
 
         <div class="quote-card">
           <!--
-            Netlify Forms: Netlify detects this form at deploy time (data-netlify)
-            and stores submissions under Forms > "quote". script.js posts it with
-            fetch so the visitor stays on the page; without JS it posts normally.
-            Form detection + email notifications are switched on in the Netlify UI.
+            SPEC DEMO: this form is front-end only. The page CSP sets
+            form-action 'none' and connect-src 'none', and script.js intercepts
+            submit, so nothing typed here can leave the browser. Wire up a real
+            handler (e.g. Netlify Forms) only once Levi has signed off.
           -->
-          <form id="quote-form" name="quote" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
-            <input type="hidden" name="form-name" value="quote">
-            <p class="hp" aria-hidden="true">
-              <label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label>
-            </p>
-            <div class="field">
-              <label for="q-name">Name</label>
-              <input id="q-name" name="name" type="text" autocomplete="name" required>
-              <p class="err" id="q-name-err" hidden>Please enter your name.</p>
+          <form id="quote-form" novalidate>
+            <div class="field-row">
+              <div class="field">
+                <label for="q-name">Name</label>
+                <input id="q-name" name="name" type="text" autocomplete="name" required>
+                <p class="err" id="q-name-err" hidden>Please enter your name.</p>
+              </div>
+              <div class="field">
+                <label for="q-phone">Phone</label>
+                <input id="q-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required>
+                <p class="err" id="q-phone-err" hidden>Please enter a phone number Levi can reach.</p>
+              </div>
             </div>
             <div class="field">
-              <label for="q-phone">Phone</label>
-              <input id="q-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required>
-              <p class="err" id="q-phone-err" hidden>Please enter a phone number Levi can call.</p>
+              <label for="q-email">Email <span class="opt">(optional)</span></label>
+              <input id="q-email" name="email" type="email" autocomplete="email" inputmode="email">
+              <p class="err" id="q-email-err" hidden>That email doesn’t look right. Check it, or leave it blank.</p>
             </div>
             <div class="field">
-              <label for="q-address">Address</label>
+              <label for="q-address">Service address</label>
               <input id="q-address" name="address" type="text" autocomplete="street-address" required>
               <p class="err" id="q-address-err" hidden>Please enter the service address.</p>
             </div>
@@ -218,14 +240,37 @@
               </select>
               <p class="err" id="q-service-err" hidden>Please choose a service.</p>
             </div>
+            <div class="field">
+              <label for="q-lawn">Tell us about your lawn <span class="opt">(optional)</span></label>
+              <textarea id="q-lawn" name="lawn" rows="4" aria-describedby="q-lawn-hint"></textarea>
+              <p class="hint" id="q-lawn-hint">Yard size, current condition, gates or dogs, anything Levi should know.</p>
+            </div>
+            <div class="field-row">
+              <fieldset class="field choice">
+                <legend>Best way to reach you</legend>
+                <label class="choice-opt"><input type="radio" name="contact" value="Call" checked> Call</label>
+                <label class="choice-opt"><input type="radio" name="contact" value="Text"> Text</label>
+              </fieldset>
+              <div class="field">
+                <label for="q-time">Best time to reach you <span class="opt">(optional)</span></label>
+                <select id="q-time" name="time">
+                  <option value="">Any time</option>
+                  <option value="Morning">Morning</option>
+                  <option value="Afternoon">Afternoon</option>
+                  <option value="Evening">Evening</option>
+                </select>
+              </div>
+            </div>
             <button class="btn btn-rust btn-block" type="submit" id="quote-submit">Request my free quote</button>
-            <p class="form-err" id="quote-send-err" role="alert" hidden>Sorry, that didn’t go through. Please try again, or call Levi at <a href="tel:+14028407341">(402) 840-7341</a>.</p>
+            <p class="next-step"><strong>What happens next:</strong> Levi reaches out by your preferred method with a free estimate.</p>
+            <p class="spec-note">Preview site: this form doesn’t send anything yet. To reach Levi today, call <a href="tel:+14028407341">(402) 840-7341</a>.</p>
           </form>
 
           <div class="quote-done" id="quote-done" hidden tabindex="-1">
             <svg aria-hidden="true" viewBox="0 0 24 24" class="done-icon"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
-            <h3>Thanks, Levi will call you back.</h3>
-            <p>Can’t wait? Give him a call during business hours, Mon–Fri 10 AM–8 PM.</p>
+            <h3 id="done-title">Thanks! Your request is ready.</h3>
+            <p id="done-msg">Levi reaches out with a free estimate.</p>
+            <p class="spec-note">Preview site: nothing was sent. To reach Levi today, call during business hours, Mon–Fri 10 AM–8 PM.</p>
             <a class="btn btn-rust btn-block" href="tel:+14028407341">Call (402) 840-7341</a>
             <button class="link-btn" type="button" id="quote-reset">Send another request</button>
           </div>
@@ -271,5 +316,6 @@
   </div>
 
   <script src="script.js"></script>
+  <script src="grass.js"></script>
 </body>
 </html>
