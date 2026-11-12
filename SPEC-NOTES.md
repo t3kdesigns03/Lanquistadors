@@ -40,15 +40,15 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
   - Button or card tap: 7–11 blades from the tap point.
 - **Sound:** two sounds, both muted by default behind the one toggle next to the hint. No music. Nothing loads or plays until the visitor turns sound on.
   - **Grass pop:** a tiny pop/rustle for the logo, service/review cards and small utility buttons.
-  - **Grass pop (the "miss")** is synthesized with the Web Audio API (no file) and is never randomized. It plays on click/tap only for service cards, review cards and small utility buttons (menu, read more, send another request, the toggle itself). It's silent on hover.
-  - **Sword slash (signature sound):** one slash used everywhere on CTA pills (`.btn`, incl. the quote submit), the $10-off offer card and the mobile bar. Click/tap plays it at full level (files peak at -12 dBFS); hover plays it at half level.
+  - **Grass pop** is synthesized with the Web Audio API (no file) and is never randomized. It plays on click/tap only for the logo, review cards and small utility buttons (menu, read more, send another request, the toggle itself). It's silent on hover.
+  - **Sword slash (signature sound):** one slash used everywhere on CTA pills (`.btn`, incl. the quote submit), the $10-off offer card, the mobile bar and the three service cards (mowing, string trimming, blade edging). Click/tap plays it at full level (files peak at -12 dBFS); hover plays it at half level.
   - **Randomized per play** (hover and click alike):
     - It picks one of the two takes at random.
     - `playbackRate` is 0.94 to 1.06, with pitch shifting too, and it is never within 0.02 of the previous play, so two plays in a row are never identical.
     - Gain is 0.9 to 1.0 times the level, so the jitter only makes it quieter, never louder than -12 dBFS.
   - The slash plays through `<audio>` elements routed into Web Audio for gain, so the CSP keeps `connect-src 'none'`. The file loads from the site itself, only after the toggle is turned on.
   - **Hover:** mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click.
-  - Keyboard focus never makes a sound. Each interaction makes one sound: slash targets don't also pop, and miss targets never slash. Plain links, nav and body text make no sound.
+  - Keyboard focus never makes a sound. Each interaction makes one sound: slash targets don't also pop, and pop targets never slash. Plain links, nav and body text make no sound.
 - **Reduced motion:** `prefers-reduced-motion` turns all of it off, including the hint and the toggle.
 - **Colors:** blade greens are sampled from the grass tuft in `logo.png`.
 
