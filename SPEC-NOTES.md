@@ -13,7 +13,8 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 | `index.html` | All content. Copy is verbatim from lawnquistadors.com |
 | `styles.css` | Layout, plus palette from Levi's logo and live site (see below) |
 | `script.js` | Mobile menu, story "read more" on phones, front-end-only quote form |
-| `grass.js` | Grass-pop animation (intro burst, logo/tap bursts, muted pop sound) |
+| `grass.js` | Grass-pop animation (intro burst, logo/tap bursts) and the site's two sounds (synthesized grass pop, sword-slash file), muted by default |
+| `assets/sounds/sword-slash.mp3` | The signature sword slash (CC0, see Sounds below) |
 | `img/` | Levi's own logo, photos and section backgrounds from his current Squarespace site |
 
 ## Look and feel (matched to lawnquistadors.com, computed styles, Nov 11 2026)
@@ -37,9 +38,14 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
   - Intro: one wave along the hero's bottom edge per page open.
   - Logo tap: 14 blades.
   - Button or card tap: 7–11 blades from the tap point.
-  - Idle: a CSS grass fringe sways along the hero's bottom edge.
-- **Sound:** a single synthesized pop/rustle, muted by default, with a toggle next to the hint. No music.
-- **Reduced motion:** `prefers-reduced-motion` turns all of it off, including the fringe sway, the hint and the toggle.
+- **Sound:** two sounds, both muted by default behind the one toggle next to the hint. No music. Nothing loads or plays until the visitor turns sound on.
+  - **Grass pop:** a tiny pop/rustle for the logo, service/review cards and small utility buttons.
+  - **Grass pop** is synthesized with the Web Audio API (no file).
+  - **Sword slash (signature sound):** one slash used everywhere on CTA pills (`.btn`, incl. the quote submit), the $10-off offer card and the mobile bar. It plays `assets/sounds/sword-slash.mp3` (see Sounds below). Click/tap plays it at full level (file peaks at -12 dBFS); hover plays it at half level.
+  - The slash plays through `<audio>` elements routed into Web Audio for gain, so the CSP keeps `connect-src 'none'`. The file loads from the site itself, only after the toggle is turned on.
+  - **Hover:** mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click.
+  - Keyboard focus never makes a sound. Each interaction makes one sound: slash targets don't also pop.
+- **Reduced motion:** `prefers-reduced-motion` turns all of it off, including the hint and the toggle.
 - **Colors:** blade greens are sampled from the grass tuft in `logo.png`.
 
 ## Privacy / security posture
@@ -51,6 +57,16 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
   - Both the form and the confirmation carry a visible "Preview site: nothing is sent" note with Levi's phone number, so a real visitor isn't misled.
   - Commit `41beea6` on `main` has a working Netlify Forms version. Restore it (and loosen the CSP to `'self'`) once Levi signs off.
 - Facebook is a plain outbound link (`rel="noopener noreferrer"`), not an embed.
+
+## Sounds
+
+| Local file | Source | License | Retrieved |
+|---|---|---|---|
+| `assets/sounds/sword-slash.mp3` | "Knife slice" by NeoSpica, Freesound sound #504610: https://freesound.org/people/NeoSpica/sounds/504610/ (public HQ preview, https://cdn.freesound.org/previews/504/504610_7704891-hq.mp3) | Creative Commons 0 (public domain dedication; commercial use allowed, no attribution required) | Nov 12 2026 |
+
+- **Processing:** mixed to mono and trimmed to the whoosh + slice (0.165 to 0.63 s of the source). Then a 4 ms fade-in, a 50 ms fade-out, peak normalized to -12 dBFS, and re-encoded as 96 kbps mp3 (5.9 KB, 0.47 s).
+- **Why this one:** Brandon's reference is the Fruit Ninja slash. That game audio is Halfbrick's and is not used or copied here; the reference was only a guide for the kind of sound. Of the CC0 sword/whoosh effects compared, this was the only one with both an airy whoosh and a bright metallic slice (energy around 4 to 5.5 kHz). The plain whooshes were all low and dull (under ~2 kHz).
+- The uploader describes it as "made by mixing a few CC0 sounds", so the whole chain is CC0.
 
 ## Images
 
