@@ -1,6 +1,6 @@
 # Lawnquistadors spec site
 
-Single-page marketing site for Lawnquistadors (Levi, Lincoln, NE), built by T3KDesigns as an unsolicited spec/demo for a pitch. The preview runs at lawnquistadors.t3kdesigns.app. **Brandon deploys the preview himself. Nothing goes live as Levi's real site without Levi's OK.**
+Single-page marketing site for Lawnquistadors (Levi, Lincoln, NE), built by T3KDesigns as an unsolicited spec/demo for a pitch. The preview runs at lawnquistadors.t3kdesigns.app. **Merging to `main` auto-deploys it (Netlify), so a merge is a ship. Nothing goes live as Levi's real site without Levi's OK.**
 
 ## Run it
 
@@ -13,7 +13,7 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 | `index.html` | All content. Copy is verbatim from lawnquistadors.com |
 | `styles.css` | Layout, plus palette from Levi's logo and live site (see below) |
 | `script.js` | Mobile menu, story "read more" on phones, front-end-only quote form |
-| `grass.js` | Grass-pop animation (intro burst, logo/tap bursts) and the site's two sounds (synthesized grass pop, sword-slash files), muted by default |
+| `sound.js` | The sword slash on buttons and cards, and its mute toggle (muted by default) |
 | `assets/sounds/sword-slash.mp3`, `sword-slash-2.mp3` | The signature sword slash, two takes (CC0, see Sounds below) |
 | `img/` | Levi's own logo, photos and section backgrounds from his current Squarespace site |
 
@@ -28,29 +28,20 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
   - White on `#ff6123` is **3.0:1** contrast. That passes WCAG AA only for large text, so CTA labels are at least 18.7px bold everywhere.
   - If Brandon would rather pass AA at any size, `#e04e12` (4.0:1) is a close darker option.
 
-## Grass pop (grass.js)
+## Sound (sound.js)
 
-- **Logo:** the logo image is never transformed or masked. Blades live in separate layers.
-- **Physics:** blades always launch upward (within ±35° of vertical), then arc and drift down.
-- **Lifecycle:** each blade lives at most 3.4s of wall-clock time and is then removed from the DOM. A safety sweep also removes blades if animation frames stall.
-- **Scoping:** each section has its own clipped layer, so bursts can't drift into another section. Header and bottom-bar taps use a fixed viewport layer.
-- **Triggers:**
-  - Intro: one wave along the hero's bottom edge per page open.
-  - Logo tap: 14 blades.
-  - Button or card tap: 7–11 blades from the tap point.
-- **Sound:** two sounds, both muted by default behind the one toggle next to the hint. No music. Nothing loads or plays until the visitor turns sound on.
-  - **Grass pop:** a tiny pop/rustle for the logo, service/review cards and small utility buttons.
-  - **Grass pop** is synthesized with the Web Audio API (no file) and is never randomized. It plays on click/tap only for the logo, review cards and small utility buttons (menu, read more, send another request, the toggle itself). It's silent on hover.
-  - **Sword slash (signature sound):** one slash used everywhere on CTA pills (`.btn`, incl. the quote submit), the $10-off offer card, the mobile bar and the three service cards (mowing, string trimming, blade edging). Click/tap plays it at full level (files peak at -12 dBFS); hover plays it at half level.
-  - **Randomized per play** (hover and click alike):
-    - It picks one of the two takes at random.
-    - `playbackRate` is 0.94 to 1.06, with pitch shifting too, and it is never within 0.02 of the previous play, so two plays in a row are never identical.
-    - Gain is 0.9 to 1.0 times the level, so the jitter only makes it quieter, never louder than -12 dBFS.
-  - The slash plays through `<audio>` elements routed into Web Audio for gain, so the CSP keeps `connect-src 'none'`. The file loads from the site itself, only after the toggle is turned on.
-  - **Hover:** mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click.
-  - Keyboard focus never makes a sound. Each interaction makes one sound: slash targets don't also pop, and pop targets never slash. Plain links, nav and body text make no sound.
-- **Reduced motion:** `prefers-reduced-motion` turns all of it off, including the hint and the toggle.
-- **Colors:** blade greens are sampled from the grass tuft in `logo.png`.
+- **One sound: the sword slash.** It's muted by default behind one visible toggle above the hero eyebrow (it floats bottom-left on screens 1300px and wider). No music. Nothing loads or plays until the visitor turns sound on.
+- **Slash targets:** CTA pills (`.btn`, incl. the hero quote, Call and the quote submit), the $10-off offer card, the mobile bar and the three service cards (mowing, string trimming, blade edging).
+  - Click/tap plays it at full level (files peak at -12 dBFS).
+  - Hover plays it at half level: mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click.
+- **Everything else is silent:** review cards, the logo, utility buttons, plain links, nav and body text. Keyboard focus never makes a sound.
+- **Randomized per play** (hover and click alike):
+  - It picks one of the two takes at random.
+  - `playbackRate` is 0.94 to 1.06, with pitch shifting too, and it is never within 0.02 of the previous play, so two plays in a row are never identical.
+  - Gain is 0.9 to 1.0 times the level, so the jitter only makes it quieter, never louder than -12 dBFS.
+- The slash plays through `<audio>` elements routed into Web Audio for gain, so the CSP keeps `connect-src 'none'`.
+- **On hold:** Levi says the slash doesn't sound right yet, and Brandon has asked him for an example of the sound he has in mind. The files will be swapped once that arrives.
+- **Removed Nov 12 2026 (Levi isn't a fan of the "confetti"):** the grass-blade bursts (intro wave, logo tap, button/card taps), the swaying fringe, the "Tap the logo — watch it grow!" hint and the grass pop sound.
 
 ## Privacy / security posture
 
