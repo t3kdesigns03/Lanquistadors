@@ -151,9 +151,10 @@
   }
 
   // Interactive buttons and cards that carry the signature sword slash (hover + click):
-  // CTA pills (incl. the quote submit), the clickable $10-off card, and the mobile bar.
-  // Plain links, the service/review cards (not links) and small utility buttons don't.
-  var SLASH_TARGETS = '.btn, .offer, .mobile-bar a';
+  // CTA pills (incl. the quote submit), the clickable $10-off card, the mobile bar and
+  // the service cards. Review cards, the logo and small utility buttons pop instead;
+  // plain links make no sound.
+  var SLASH_TARGETS = '.btn, .offer, .mobile-bar a, .service';
 
   // Tap any button or card: 7-11 blades from the exact tap point
   var TAP_TARGETS = 'a.btn, button, .offer, .service, .review, .mobile-bar a';
