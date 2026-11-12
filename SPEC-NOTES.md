@@ -13,7 +13,7 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 | `index.html` | All content. Copy is verbatim from lawnquistadors.com |
 | `styles.css` | Layout, plus palette from Levi's logo and live site (see below) |
 | `script.js` | Mobile menu, story "read more" on phones, front-end-only quote form |
-| `grass.js` | Grass-pop animation (intro burst, logo/tap bursts, muted pop sound) |
+| `grass.js` | Grass-pop animation (intro burst, logo/tap bursts) and the site's two synthesized sounds (grass pop, sword slash), muted by default |
 | `img/` | Levi's own logo, photos and section backgrounds from his current Squarespace site |
 
 ## Look and feel (matched to lawnquistadors.com, computed styles, Nov 11 2026)
@@ -38,7 +38,11 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
   - Logo tap: 14 blades.
   - Button or card tap: 7–11 blades from the tap point.
   - Idle: a CSS grass fringe sways along the hero's bottom edge.
-- **Sound:** a single synthesized pop/rustle, muted by default, with a toggle next to the hint. No music.
+- **Sound:** two sounds, both synthesized with the Web Audio API (no audio files, no music), both muted by default behind the one toggle next to the hint.
+  - **Grass pop:** a tiny pop/rustle for the logo, service/review cards and small utility buttons.
+  - **Sword slash (signature sound):** one slash used everywhere on CTA pills (`.btn`, incl. the quote submit), the $10-off offer card and the mobile bar. White noise through a band-pass sweeping 2500 to 500 Hz over 0.16 s, plus a quiet high "shing" (two inharmonic partials and a noise tick). Click/tap peaks around -12 dBFS; hover plays the same slash at half level.
+  - **Hover:** mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click.
+  - Keyboard focus never makes a sound. Each interaction makes one sound: slash targets don't also pop.
 - **Reduced motion:** `prefers-reduced-motion` turns all of it off, including the fringe sway, the hint and the toggle.
 - **Colors:** blade greens are sampled from the grass tuft in `logo.png`.
 

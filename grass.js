@@ -1,6 +1,7 @@
 // Lawnquistadors: grass-pop effect (Butter Batch popcorn mechanics, with grass).
 // Rules: the logo image is never touched; blades always launch UP first, then
-// arc and drift down; no music (one tiny synthesized pop, muted by default);
+// arc and drift down; no music (two synthesized sounds, both muted by default
+// behind one toggle: a tiny pop for grass bursts, a sword slash for buttons);
 // every blade lives <= LIFE_MAX seconds and is removed from the DOM; bursts are
 // clipped to the section they start in. Reduced motion disables all of it.
 (function () {
@@ -140,14 +141,19 @@
   if (reduce.addEventListener) reduce.addEventListener('change', function () { if (reduce.matches) clearAll(); });
 
   // ---- bursts ----
-  function burstAt(sourceEl, cx, cy, n, power, life) {
+  function burstAt(sourceEl, cx, cy, n, power, life, quiet) {
     if (reduce.matches) return;
     var layer = layerFor(sourceEl);
     var p = toLocal(layer, cx, cy);
     for (var i = 0; i < n; i++) spawn(layer, p.x + rand(-6, 6), p.y + rand(-4, 4), p.h, power, life);
     run();
-    sound.pop();
+    if (!quiet) sound.pop();
   }
+
+  // Interactive buttons and cards that carry the signature sword slash (hover + click):
+  // CTA pills (incl. the quote submit), the clickable $10-off card, and the mobile bar.
+  // Plain links, the service/review cards (not links) and small utility buttons don't.
+  var SLASH_TARGETS = '.btn, .offer, .mobile-bar a';
 
   // Tap any button or card: 7-11 blades from the exact tap point
   var TAP_TARGETS = 'a.btn, button, .offer, .service, .review, .mobile-bar a';
@@ -159,7 +165,10 @@
       var r = t.getBoundingClientRect();
       cx = r.left + r.width / 2; cy = r.top + r.height / 2;
     }
-    burstAt(t, cx, cy, 7 + ((Math.random() * 5) | 0), 640);
+    // One sound per interaction: slash targets slash, everything else pops.
+    var slashes = t.matches(SLASH_TARGETS);
+    burstAt(t, cx, cy, 7 + ((Math.random() * 5) | 0), 640, null, slashes);
+    if (slashes) sound.slash(1);
   });
 
   // Tap the logo: 14 blades burst UP from around it (logo image itself untouched)
@@ -206,17 +215,18 @@
   if (document.readyState === 'complete') setTimeout(intro, 200);
   else window.addEventListener('load', function () { setTimeout(intro, 200); }, { once: true });
 
-  // ---- sound: tiny synthesized pop/rustle, muted by default, no music ----
+  // ---- sound: synthesized in code (no audio files, no music), muted by default ----
+  // One toggle controls both sounds: the grass pop and the sword slash.
   var sound = (function () {
     var btn = document.getElementById('sound-toggle');
-    var on = false, ctx = null, noise = null;
+    var on = false, ctx = null, noise = null, air = null;
     if (btn) {
       btn.hidden = false;
-      btn.title = 'Grass pop sound: off';
+      btn.title = 'Sound: off';
       btn.addEventListener('click', function () {
         on = !on;
         btn.setAttribute('aria-pressed', String(on));
-        btn.title = 'Grass pop sound: ' + (on ? 'on' : 'off');
+        btn.title = 'Sound: ' + (on ? 'on' : 'off');
         if (on && !ctx) {
           var AC = window.AudioContext || window.webkitAudioContext;
           if (AC) {
@@ -224,12 +234,22 @@
             noise = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
             var d = noise.getChannelData(0);
             for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+            // flat white noise for the slash (its envelope comes from gain nodes)
+            air = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+            d = air.getChannelData(0);
+            for (i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
           }
         }
       });
     }
     var lastPop = 0;
     return {
+      // Signature sword slash. level 1 = click/tap, lower = hover.
+      slash: function (level) {
+        if (!on || !ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        playSlash(ctx, ctx.destination, air, ctx.currentTime, level);
+      },
       pop: function () {
         if (!on || !ctx) return;
         var now = ctx.currentTime;
@@ -252,4 +272,61 @@
       }
     };
   })();
+
+  // Whoosh: white noise through a band-pass sweeping 2500 -> 500 Hz over 0.16 s,
+  // fast attack, quick decay. Shing: two quiet inharmonic partials plus a tiny
+  // high-passed noise tick, gone in ~80 ms, so it reads as steel, not a beep.
+  function playSlash(ac, out, buf, t0, level) {
+    var SWEEP = 0.16, END = 0.2;
+    level *= 0.6; // click peaks around -12 dBFS: clearly a slash, never a jump-scare
+    var s = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = buf;
+    bp.type = 'bandpass'; bp.Q.value = 1.6;
+    bp.frequency.setValueAtTime(2500, t0);
+    bp.frequency.exponentialRampToValueAtTime(500, t0 + SWEEP);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.9 * level, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.35 * level, t0 + 0.09); // hold the body so the sweep is heard
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + END);
+    s.connect(bp).connect(g).connect(out);
+    s.start(t0); s.stop(t0 + END + 0.02);
+
+    [[5300, 0.018], [7900, 0.009]].forEach(function (p) {
+      var o = ac.createOscillator(), og = ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(p[0], t0);
+      o.frequency.exponentialRampToValueAtTime(p[0] * 0.93, t0 + 0.08);
+      og.gain.setValueAtTime(0.0001, t0);
+      og.gain.exponentialRampToValueAtTime(p[1] * level, t0 + 0.003);
+      og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.08);
+      o.connect(og).connect(out);
+      o.start(t0); o.stop(t0 + 0.09);
+    });
+
+    var k = ac.createBufferSource(), hp = ac.createBiquadFilter(), kg = ac.createGain();
+    k.buffer = buf;
+    hp.type = 'highpass'; hp.frequency.value = 6500;
+    kg.gain.setValueAtTime(0.0001, t0);
+    kg.gain.exponentialRampToValueAtTime(0.12 * level, t0 + 0.002);
+    kg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.03);
+    k.connect(hp).connect(kg).connect(out);
+    k.start(t0, 0.2); k.stop(t0 + 0.04);
+  }
+
+  // Hover: pointer enter only (mouse/pen; touch has no hover, its tap is the click above),
+  // at most once per 400 ms per button, never again while the pointer stays on it.
+  // Keyboard focus never makes a sound.
+  var HOVER_GAP = 400, SWEEP_GAP = 120, HOVER_LEVEL = 0.5, lastAnyHover = -Infinity;
+  Array.prototype.forEach.call(document.querySelectorAll(SLASH_TARGETS), function (el) {
+    var lastHover = -Infinity;
+    el.addEventListener('pointerenter', function (e) {
+      if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+      var t = performance.now();
+      // per-button 400 ms throttle, plus a short global gap so a fast sweep
+      // across a row of buttons gives one clean slash instead of a smear
+      if (t - lastHover < HOVER_GAP || t - lastAnyHover < SWEEP_GAP) return;
+      lastHover = lastAnyHover = t;
+      sound.slash(HOVER_LEVEL);
+    });
+  });
 })();
