@@ -216,11 +216,11 @@
   else window.addEventListener('load', function () { setTimeout(intro, 200); }, { once: true });
 
   // ---- sound: muted by default, no music ----
-  // One toggle controls both sounds: the synthesized grass pop and the sword slash
-  // (assets/sounds/sword-slash.mp3, CC0, see SPEC-NOTES). Nothing loads until the
-  // toggle is turned on. The slash plays through <audio> elements routed into Web
+  // One toggle controls both sounds: the synthesized grass pop (the "miss") and the
+  // sword slash (two CC0 takes in assets/sounds/, see SPEC-NOTES). Nothing loads until
+  // the toggle is turned on. The slash plays through <audio> elements routed into Web
   // Audio for gain, so the CSP can keep connect-src 'none'.
-  var SLASH_SRC = 'assets/sounds/sword-slash.mp3';
+  var SLASH_SRCS = ['assets/sounds/sword-slash.mp3', 'assets/sounds/sword-slash-2.mp3'];
   var sound = (function () {
     var btn = document.getElementById('sound-toggle');
     var on = false, ctx = null, noise = null, voices = [];
@@ -238,31 +238,45 @@
             noise = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
             var d = noise.getChannelData(0);
             for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-            // three slash voices so a click can land while a hover slash is still ringing
-            for (i = 0; i < 3; i++) {
-              var a = new Audio(SLASH_SRC);
-              a.preload = 'auto';
-              var g = ctx.createGain();
-              ctx.createMediaElementSource(a).connect(g).connect(ctx.destination);
-              voices.push({ el: a, gain: g, at: 0 });
-            }
+            // two voices per take, so a click can land while a hover slash is still ringing
+            SLASH_SRCS.forEach(function (src) {
+              var pool = [];
+              for (var j = 0; j < 2; j++) {
+                var a = new Audio(src);
+                a.preload = 'auto';
+                // let playbackRate shift pitch too, not just speed
+                a.preservesPitch = a.mozPreservesPitch = a.webkitPreservesPitch = false;
+                var g = ctx.createGain();
+                ctx.createMediaElementSource(a).connect(g).connect(ctx.destination);
+                pool.push({ el: a, gain: g, at: 0 });
+              }
+              voices.push(pool);
+            });
           }
         }
       });
     }
     var lastPop = -1; // so the very first pop (the toggle's own confirmation) isn't throttled away
+    var lastRate = 1;
     return {
-      // Signature sword slash. level 1 = click/tap (file peaks ~-12 dBFS), 0.5 = hover.
+      // Signature sword slash. level 1 = click/tap (files peak ~-12 dBFS), 0.5 = hover.
+      // Every play varies: a random take, playbackRate 0.94-1.06 (never within 0.02 of
+      // the previous play), and gain 0.9-1.0x of the level (jitter only ever quieter).
       slash: function (level) {
         if (!on || !ctx || !voices.length) return;
         if (ctx.state === 'suspended') ctx.resume();
-        var v = voices[0];
-        for (var i = 0; i < voices.length; i++) {
-          if (voices[i].el.paused || voices[i].el.ended) { v = voices[i]; break; }
-          if (voices[i].at < v.at) v = voices[i]; // all busy: reuse the oldest
+        var pool = voices[(Math.random() * voices.length) | 0];
+        var v = pool[0];
+        for (var i = 0; i < pool.length; i++) {
+          if (pool[i].el.paused || pool[i].el.ended) { v = pool[i]; break; }
+          if (pool[i].at < v.at) v = pool[i]; // all busy: reuse the oldest
         }
+        var rate;
+        do { rate = 0.94 + Math.random() * 0.12; } while (Math.abs(rate - lastRate) < 0.02);
+        lastRate = rate;
         v.at = performance.now();
-        v.gain.gain.value = level;
+        v.el.playbackRate = rate;
+        v.gain.gain.value = level * (0.9 + Math.random() * 0.1);
         v.el.currentTime = 0;
         var p = v.el.play();
         if (p && p.catch) p.catch(function () {});
