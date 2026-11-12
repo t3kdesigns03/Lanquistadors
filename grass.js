@@ -1,14 +1,14 @@
 // Lawnquistadors: grass-pop effect (Butter Batch popcorn mechanics, with grass).
 // Rules: the logo image is never touched; blades always launch UP first, then
-// arc and drift down; no music (two synthesized sounds, both muted by default
-// behind one toggle: a tiny pop for grass bursts, a sword slash for buttons);
+// arc and drift down; no music (two sounds, both muted by default behind one
+// toggle: a tiny synthesized pop for grass bursts, a sword slash for buttons);
 // every blade lives <= LIFE_MAX seconds and is removed from the DOM; bursts are
 // clipped to the section they start in. Reduced motion disables all of it.
 (function () {
   'use strict';
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (reduce.matches) return; // fringe sway is also off via CSS; hint + sound toggle stay hidden
+  if (reduce.matches) return; // hint + sound toggle stay hidden
 
   // Greens sampled from the grass tuft in Levi's logo (img/logo.png)
   var GREENS = ['#003000', '#004800', '#005400', '#006000', '#006c0c', '#0c780c'];
@@ -215,11 +215,15 @@
   if (document.readyState === 'complete') setTimeout(intro, 200);
   else window.addEventListener('load', function () { setTimeout(intro, 200); }, { once: true });
 
-  // ---- sound: synthesized in code (no audio files, no music), muted by default ----
-  // One toggle controls both sounds: the grass pop and the sword slash.
+  // ---- sound: muted by default, no music ----
+  // One toggle controls both sounds: the synthesized grass pop and the sword slash
+  // (assets/sounds/sword-slash.mp3, CC0, see SPEC-NOTES). Nothing loads until the
+  // toggle is turned on. The slash plays through <audio> elements routed into Web
+  // Audio for gain, so the CSP can keep connect-src 'none'.
+  var SLASH_SRC = 'assets/sounds/sword-slash.mp3';
   var sound = (function () {
     var btn = document.getElementById('sound-toggle');
-    var on = false, ctx = null, noise = null, air = null;
+    var on = false, ctx = null, noise = null, voices = [];
     if (btn) {
       btn.hidden = false;
       btn.title = 'Sound: off';
@@ -234,21 +238,34 @@
             noise = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
             var d = noise.getChannelData(0);
             for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-            // flat white noise for the slash (its envelope comes from gain nodes)
-            air = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
-            d = air.getChannelData(0);
-            for (i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            // three slash voices so a click can land while a hover slash is still ringing
+            for (i = 0; i < 3; i++) {
+              var a = new Audio(SLASH_SRC);
+              a.preload = 'auto';
+              var g = ctx.createGain();
+              ctx.createMediaElementSource(a).connect(g).connect(ctx.destination);
+              voices.push({ el: a, gain: g, at: 0 });
+            }
           }
         }
       });
     }
-    var lastPop = 0;
+    var lastPop = -1; // so the very first pop (the toggle's own confirmation) isn't throttled away
     return {
-      // Signature sword slash. level 1 = click/tap, lower = hover.
+      // Signature sword slash. level 1 = click/tap (file peaks ~-12 dBFS), 0.5 = hover.
       slash: function (level) {
-        if (!on || !ctx) return;
+        if (!on || !ctx || !voices.length) return;
         if (ctx.state === 'suspended') ctx.resume();
-        playSlash(ctx, ctx.destination, air, ctx.currentTime, level);
+        var v = voices[0];
+        for (var i = 0; i < voices.length; i++) {
+          if (voices[i].el.paused || voices[i].el.ended) { v = voices[i]; break; }
+          if (voices[i].at < v.at) v = voices[i]; // all busy: reuse the oldest
+        }
+        v.at = performance.now();
+        v.gain.gain.value = level;
+        v.el.currentTime = 0;
+        var p = v.el.play();
+        if (p && p.catch) p.catch(function () {});
       },
       pop: function () {
         if (!on || !ctx) return;
@@ -272,46 +289,6 @@
       }
     };
   })();
-
-  // Whoosh: white noise through a band-pass sweeping 2500 -> 500 Hz over 0.16 s,
-  // fast attack, quick decay. Shing: two quiet inharmonic partials plus a tiny
-  // high-passed noise tick, gone in ~80 ms, so it reads as steel, not a beep.
-  function playSlash(ac, out, buf, t0, level) {
-    var SWEEP = 0.16, END = 0.2;
-    level *= 0.6; // click peaks around -12 dBFS: clearly a slash, never a jump-scare
-    var s = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
-    s.buffer = buf;
-    bp.type = 'bandpass'; bp.Q.value = 1.6;
-    bp.frequency.setValueAtTime(2500, t0);
-    bp.frequency.exponentialRampToValueAtTime(500, t0 + SWEEP);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(0.9 * level, t0 + 0.012);
-    g.gain.exponentialRampToValueAtTime(0.35 * level, t0 + 0.09); // hold the body so the sweep is heard
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + END);
-    s.connect(bp).connect(g).connect(out);
-    s.start(t0); s.stop(t0 + END + 0.02);
-
-    [[5300, 0.018], [7900, 0.009]].forEach(function (p) {
-      var o = ac.createOscillator(), og = ac.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(p[0], t0);
-      o.frequency.exponentialRampToValueAtTime(p[0] * 0.93, t0 + 0.08);
-      og.gain.setValueAtTime(0.0001, t0);
-      og.gain.exponentialRampToValueAtTime(p[1] * level, t0 + 0.003);
-      og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.08);
-      o.connect(og).connect(out);
-      o.start(t0); o.stop(t0 + 0.09);
-    });
-
-    var k = ac.createBufferSource(), hp = ac.createBiquadFilter(), kg = ac.createGain();
-    k.buffer = buf;
-    hp.type = 'highpass'; hp.frequency.value = 6500;
-    kg.gain.setValueAtTime(0.0001, t0);
-    kg.gain.exponentialRampToValueAtTime(0.12 * level, t0 + 0.002);
-    kg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.03);
-    k.connect(hp).connect(kg).connect(out);
-    k.start(t0, 0.2); k.stop(t0 + 0.04);
-  }
 
   // Hover: pointer enter only (mouse/pen; touch has no hover, its tap is the click above),
   // at most once per 400 ms per button, never again while the pointer stays on it.
