@@ -13,8 +13,8 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 | `index.html` | All content. Copy is verbatim from lawnquistadors.com |
 | `styles.css` | Layout, plus palette from Levi's logo and live site (see below) |
 | `script.js` | Mobile menu, story "read more" on phones, front-end-only quote form |
-| `grass.js` | Grass-pop animation (intro burst, logo/tap bursts) and the site's two sounds (synthesized grass pop, sword-slash file), muted by default |
-| `assets/sounds/sword-slash.mp3` | The signature sword slash (CC0, see Sounds below) |
+| `grass.js` | Grass-pop animation (intro burst, logo/tap bursts) and the site's two sounds (synthesized grass pop, sword-slash files), muted by default |
+| `assets/sounds/sword-slash.mp3`, `sword-slash-2.mp3` | The signature sword slash, two takes (CC0, see Sounds below) |
 | `img/` | Levi's own logo, photos and section backgrounds from his current Squarespace site |
 
 ## Look and feel (matched to lawnquistadors.com, computed styles, Nov 11 2026)
@@ -40,11 +40,15 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
   - Button or card tap: 7–11 blades from the tap point.
 - **Sound:** two sounds, both muted by default behind the one toggle next to the hint. No music. Nothing loads or plays until the visitor turns sound on.
   - **Grass pop:** a tiny pop/rustle for the logo, service/review cards and small utility buttons.
-  - **Grass pop** is synthesized with the Web Audio API (no file).
-  - **Sword slash (signature sound):** one slash used everywhere on CTA pills (`.btn`, incl. the quote submit), the $10-off offer card and the mobile bar. It plays `assets/sounds/sword-slash.mp3` (see Sounds below). Click/tap plays it at full level (file peaks at -12 dBFS); hover plays it at half level.
+  - **Grass pop (the "miss")** is synthesized with the Web Audio API (no file) and is never randomized. It plays on click/tap only for service cards, review cards and small utility buttons (menu, read more, send another request, the toggle itself). It's silent on hover.
+  - **Sword slash (signature sound):** one slash used everywhere on CTA pills (`.btn`, incl. the quote submit), the $10-off offer card and the mobile bar. Click/tap plays it at full level (files peak at -12 dBFS); hover plays it at half level.
+  - **Randomized per play** (hover and click alike):
+    - It picks one of the two takes at random.
+    - `playbackRate` is 0.94 to 1.06, with pitch shifting too, and it is never within 0.02 of the previous play, so two plays in a row are never identical.
+    - Gain is 0.9 to 1.0 times the level, so the jitter only makes it quieter, never louder than -12 dBFS.
   - The slash plays through `<audio>` elements routed into Web Audio for gain, so the CSP keeps `connect-src 'none'`. The file loads from the site itself, only after the toggle is turned on.
   - **Hover:** mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click.
-  - Keyboard focus never makes a sound. Each interaction makes one sound: slash targets don't also pop.
+  - Keyboard focus never makes a sound. Each interaction makes one sound: slash targets don't also pop, and miss targets never slash. Plain links, nav and body text make no sound.
 - **Reduced motion:** `prefers-reduced-motion` turns all of it off, including the hint and the toggle.
 - **Colors:** blade greens are sampled from the grass tuft in `logo.png`.
 
@@ -63,10 +67,17 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 | Local file | Source | License | Retrieved |
 |---|---|---|---|
 | `assets/sounds/sword-slash.mp3` | "Knife slice" by NeoSpica, Freesound sound #504610: https://freesound.org/people/NeoSpica/sounds/504610/ (public HQ preview, https://cdn.freesound.org/previews/504/504610_7704891-hq.mp3) | Creative Commons 0 (public domain dedication; commercial use allowed, no attribution required) | Nov 12 2026 |
+| `assets/sounds/sword-slash-2.mp3` | "Swing.mp3" by XxChr0nosxX, Freesound sound #268227: https://freesound.org/people/XxChr0nosxX/sounds/268227/ (public HQ preview, https://cdn.freesound.org/previews/268/268227_5078136-hq.mp3) | Creative Commons 0 | Nov 12 2026 |
 
-- **Processing:** mixed to mono and trimmed to the whoosh + slice (0.165 to 0.63 s of the source). Then a 4 ms fade-in, a 50 ms fade-out, peak normalized to -12 dBFS, and re-encoded as 96 kbps mp3 (5.9 KB, 0.47 s).
+- **Processing (`sword-slash.mp3`):** mixed to mono and trimmed to the whoosh + slice (0.165 to 0.63 s of the source). Then a 4 ms fade-in, a 50 ms fade-out, peak normalized to -12 dBFS, and re-encoded as 96 kbps mp3 (5.9 KB, 0.47 s).
 - **Why this one:** Brandon's reference is the Fruit Ninja slash. That game audio is Halfbrick's and is not used or copied here; the reference was only a guide for the kind of sound. Of the CC0 sword/whoosh effects compared, this was the only one with both an airy whoosh and a bright metallic slice (energy around 4 to 5.5 kHz). The plain whooshes were all low and dull (under ~2 kHz).
 - The uploader describes it as "made by mixing a few CC0 sounds", so the whole chain is CC0.
+- **Processing (`sword-slash-2.mp3`):**
+  - Mixed to mono, with a 180 Hz high-pass to remove a low hum floor before the swing.
+  - Trimmed to the swing (0.365 to 0.66 s of the source), with the same fades as the first take.
+  - Loudness matched to the first take, within 0.5 dB on the loud part, and capped at -12 dBFS peak.
+  - 96 kbps mp3: 4.1 KB, 0.30 s.
+- **Why it's the second take:** of the other CC0 candidates, it is the closest match to the first take: a single whoosh into a bright edge, with a similar low/high balance. The darker "samurai" and RPG slashes centered around 2 kHz. The other bright swishes were either mostly hiss above 8 kHz or thin with no body.
 
 ## Images
 
