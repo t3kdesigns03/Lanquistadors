@@ -13,8 +13,9 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 | `index.html` | All content. Copy is verbatim from lawnquistadors.com |
 | `styles.css` | Layout, plus palette from Levi's logo and live site (see below) |
 | `script.js` | Mobile menu, story "read more" on phones, front-end-only quote form |
-| `sound.js` | The sword slash on buttons and cards, and its mute toggle (muted by default) |
-| `assets/sounds/sword-slash.mp3`, `sword-slash-2.mp3` | The signature sword slash, two takes (CC0, see Sounds below) |
+| `sound.js` | The sword sounds on buttons and cards (click = unsheathe, hover = slash), and the mute toggle (muted by default) |
+| `assets/sounds/sword-unsheathe.mp3`, `sword-unsheathe-2.mp3` | The sword unsheathe for click/tap, two takes (CC0, see Sounds below) |
+| `assets/sounds/sword-slash.mp3`, `sword-slash-2.mp3` | The sword slash for hover, two takes (CC0, see Sounds below) |
 | `img/` | Levi's own logo, photos and section backgrounds from his current Squarespace site |
 
 ## Look and feel (matched to lawnquistadors.com, computed styles, Nov 11 2026)
@@ -30,17 +31,17 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 
 ## Sound (sound.js)
 
-- **One sound: the sword slash.** It's muted by default behind one visible toggle above the hero eyebrow (it floats bottom-left on screens 1300px and wider). No music. Nothing loads or plays until the visitor turns sound on.
-- **Slash targets:** CTA pills (`.btn`, incl. the hero quote, Call and the quote submit), the $10-off offer card, the mobile bar and the three service cards (mowing, string trimming, blade edging).
-  - Click/tap plays it at full level (files peak at -12 dBFS).
-  - Hover plays it at half level: mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click.
+- **Two sounds: click = sword unsheathe, hover = sword slash.** Both are muted by default behind one visible toggle above the hero eyebrow (it floats bottom-left on screens 1300px and wider). No music. Nothing loads or plays until the visitor turns sound on.
+- **Sound targets:** CTA pills (`.btn`, incl. the hero quote, Call and the quote submit), the $10-off offer card, the mobile bar and the three service cards (mowing, string trimming, blade edging).
+  - Click/tap plays the unsheathe at full level (files peak at -12 dBFS or below).
+  - Hover plays the slash at half level: mouse/pen pointer-enter only, at most once per 400 ms per button, never again while the pointer stays on it, and a 120 ms gap across buttons so a fast sweep gives one slash. Touch has no hover: a tap is a click, so on phones only the unsheathe plays.
 - **Everything else is silent:** review cards, the logo, utility buttons, plain links, nav and body text. Keyboard focus never makes a sound.
-- **Randomized per play** (hover and click alike):
-  - It picks one of the two takes at random.
-  - `playbackRate` is 0.94 to 1.06, with pitch shifting too, and it is never within 0.02 of the previous play, so two plays in a row are never identical.
+- **Randomized per play** (both sounds, hover and click alike):
+  - It picks one of that sound's two takes at random.
+  - `playbackRate` is 0.94 to 1.06, with pitch shifting too, and it is never within 0.02 of the previous play of the same sound, so two plays in a row are never identical.
   - Gain is 0.9 to 1.0 times the level, so the jitter only makes it quieter, never louder than -12 dBFS.
-- The slash plays through `<audio>` elements routed into Web Audio for gain, so the CSP keeps `connect-src 'none'`.
-- **On hold:** Levi says the slash doesn't sound right yet, and Brandon has asked him for an example of the sound he has in mind. The files will be swapped once that arrives.
+- Each sound has its own voice pool (two voices per take). Both play through `<audio>` elements routed into Web Audio for gain, so the CSP keeps `connect-src 'none'`.
+- **Nov 16 2026:** Levi's reference for the click sound is "Sword Unsheathed Sound Effect - High Quality" (YouTube, https://youtu.be/zqujcCBgwkU). That audio is not downloaded, used or copied here. It was only a guide for the kind of sound: a clean metallic draw with a ring, no music, no voice.
 - **Removed Nov 12 2026 (Levi isn't a fan of the "confetti"):** the grass-blade bursts (intro wave, logo tap, button/card taps), the swaying fringe, the "Tap the logo — watch it grow!" hint and the grass pop sound.
 
 ## Privacy / security posture
@@ -57,6 +58,8 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
 
 | Local file | Source | License | Retrieved |
 |---|---|---|---|
+| `assets/sounds/sword-unsheathe.mp3` | "Sword draw unsheathe" by SamsterBirdies, Freesound sound #581594: https://freesound.org/people/SamsterBirdies/sounds/581594/ (public HQ preview, https://cdn.freesound.org/previews/581/581594_5487341-hq.mp3) | Creative Commons 0 (public domain dedication; commercial use allowed, no attribution required) | Nov 16 2026 |
+| `assets/sounds/sword-unsheathe-2.mp3` | "Sword Fast Unsheath.wav" by ethanchase7744, Freesound sound #468695: https://freesound.org/people/ethanchase7744/sounds/468695/ (public HQ preview, https://cdn.freesound.org/previews/468/468695_3928631-hq.mp3) | Creative Commons 0 | Nov 16 2026 |
 | `assets/sounds/sword-slash.mp3` | "Knife slice" by NeoSpica, Freesound sound #504610: https://freesound.org/people/NeoSpica/sounds/504610/ (public HQ preview, https://cdn.freesound.org/previews/504/504610_7704891-hq.mp3) | Creative Commons 0 (public domain dedication; commercial use allowed, no attribution required) | Nov 12 2026 |
 | `assets/sounds/sword-slash-2.mp3` | "Swing.mp3" by XxChr0nosxX, Freesound sound #268227: https://freesound.org/people/XxChr0nosxX/sounds/268227/ (public HQ preview, https://cdn.freesound.org/previews/268/268227_5078136-hq.mp3) | Creative Commons 0 | Nov 12 2026 |
 
@@ -69,6 +72,14 @@ Open `index.html` in a browser. There's no build step and nothing to install. (T
   - Loudness matched to the first take, within 0.5 dB on the loud part, and capped at -12 dBFS peak.
   - 96 kbps mp3: 4.1 KB, 0.30 s.
 - **Why it's the second take:** of the other CC0 candidates, it is the closest match to the first take: a single whoosh into a bright edge, with a similar low/high balance. The darker "samurai" and RPG slashes centered around 2 kHz. The other bright swishes were either mostly hiss above 8 kHz or thin with no body.
+- **Processing (both unsheathe takes):**
+  - Mixed to mono, with a 100 Hz high-pass.
+  - Trimmed to the scrape plus the ring: 0.29 to 1.45 s of #581594, and 0.15 to 1.30 s of #468695.
+  - 4 ms fade-in and a 250 ms fade-out on the ring tail.
+  - The first take is peak normalized to -12 dBFS. The second is loudness matched to it on the loud part (within 0.1 dB) and peaks below -12 dBFS.
+  - 96 kbps mp3: about 14.8 KB and 1.15 s each.
+- **Why these two:** they were compared with 12 CC0 "sword draw/unsheathe" results on Freesound. These two are the only ones with the classic "shing": a short bright scrape (energy around 5 to 9 kHz) into a clean, sustained metallic ring (about 2.6/3.2 kHz and 2.5 kHz) that decays over about 0.8 s. The rest were mostly scrape noise with no ring, a synthesized take, or a mix of other uploads whose licenses would also need checking.
+- **Known quirk:** both sources are recorded hot, and the brief scrape burst is clipped in the source (about 0.1 to 0.2 s). The ring is clean. After scaling to -12 dBFS the clipping sits inside a noise-like burst and is masked, but a cleaner source would be worth swapping in if one turns up.
 
 ## Images
 
